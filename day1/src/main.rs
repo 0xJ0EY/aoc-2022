@@ -36,7 +36,7 @@ fn part2(input: &str) -> usize {
     
     calories.sort_by(|a, b| b.cmp(a));
 
-    calories[0] + calories[1] + calories[2]
+    calories.iter().take(3).sum()
 }
 
 fn main() {
