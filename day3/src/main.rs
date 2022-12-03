@@ -1,34 +1,22 @@
 use std::collections::HashSet;
 
-fn ascii_to_result(item: &char) -> usize {
-    if !item.is_ascii() { return 0; }
-
-    if item.is_ascii_uppercase() {
-        let index = *item as usize - 'A' as usize;
-        return 27 + index;
-    } else {
-        let index = *item as usize - 'a' as usize;
-        return 1 + index;
+fn priority(item: char) -> usize {
+    match item {
+        'a' ..= 'z' => (item as usize - 'a' as usize) + 1,
+        'A' ..= 'Z' => (item as usize - 'A' as usize) + 27,
+        _ => unreachable!()
     }
 }
 
 fn part1(input: &str) -> usize {
     input.split('\n').map(|line| {
         let (left, right) = line.split_at(line.len() / 2);
-        let mut map = HashSet::with_capacity(left.len());
+
+        let intersect = left.chars().find(|&item| right.contains(item));
+
+        if intersect.is_none() { return 0; }
         
-        for c in left.chars() { map.insert(c); }
-
-        for c in right.chars() {
-            if map.contains(&c) {
-                return Some(c.clone())
-            }
-        }
-
-        None
-    }).map(|item| {
-        if item.is_none() { return 0; }
-        ascii_to_result(&item.unwrap())
+        priority(intersect.unwrap())
     }).sum()
 }
 
@@ -38,23 +26,18 @@ fn part2(input: &str) -> usize {
     let mut sum = 0;
 
     for i in (0..lines.len()).step_by(3) {
-        let bundle = [
-            lines.get(i + 1).unwrap_or(&""),
-            lines.get(i + 0).unwrap_or(&""),
-            lines.get(i + 2).unwrap_or(&"")
-        ];
+        let (s1, s2, s3) = (
+            *lines.get(i + 0).unwrap_or(&""),
+            *lines.get(i + 1).unwrap_or(&""),
+            *lines.get(i + 2).unwrap_or(&"")
+        );
 
-        let mut map = HashSet::with_capacity(bundle[0].len());
-        for c in bundle[0].chars() { map.insert(c); }
+        let h1: HashSet<char> = s1.chars().into_iter().collect();
+        let h2: HashSet<char> = s2.chars().into_iter().collect();
 
-        let mut filtered_map = HashSet::new();
-        for c in bundle[1].chars() {
-            if map.contains(&c) { filtered_map.insert(c); }
-        }
-
-        for c in bundle[2].chars() {
-            if filtered_map.contains(&c) {
-                sum += ascii_to_result(&c);
+        for c in s3.chars() {
+            if h1.contains(&c) && h2.contains(&c) {
+                sum += priority(c);
                 break;
             }
         }
