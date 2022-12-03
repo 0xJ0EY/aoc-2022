@@ -33,9 +33,9 @@ fn part2(input: &str) -> usize {
         );
 
         let h1: HashSet<char> = s1.chars().into_iter().collect();
-        let h2: HashSet<char> = s2.chars().into_iter().collect();
+        let h2: HashSet<char> = s2.chars().filter(|&x| h1.contains(&x)).into_iter().collect();
 
-        sum += priority(s3.chars().find(|&c| h1.contains(&c) && h2.contains(&c)).unwrap());
+        sum += priority(s3.chars().find(|&c| h2.contains(&c)).unwrap());
     }
 
     sum
