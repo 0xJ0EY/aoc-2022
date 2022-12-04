@@ -43,8 +43,10 @@ fn part1(input: &str) -> usize {
             let lhs = Section::from_str(start).unwrap();
             let rhs = Section::from_str(end).unwrap();
 
-            if lhs.contains(&rhs) { 1 } else { 0 }
-        }).sum();
+            lhs.contains(&rhs)
+        })
+        .filter(|&x| x == true)
+        .count()
 }
 
 fn part2(input: &str) -> usize {
@@ -55,8 +57,10 @@ fn part2(input: &str) -> usize {
             let lhs = Section::from_str(start).unwrap();
             let rhs = Section::from_str(end).unwrap();
 
-            if lhs.overlap(&rhs) { 1 } else { 0 }
-        }).sum();
+            lhs.overlap(&rhs)
+        })
+        .filter(|&x| x == true)
+        .count();
 }
 
 fn main() {
