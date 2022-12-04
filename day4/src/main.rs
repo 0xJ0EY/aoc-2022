@@ -37,7 +37,7 @@ impl Section {
 fn part1(input: &str) -> usize {
     return input
         .split_terminator('\n')
-        .map(|line| {
+        .filter(|line| {
             let (start, end) = line.split_once(',').unwrap();
 
             let lhs = Section::from_str(start).unwrap();
@@ -45,13 +45,12 @@ fn part1(input: &str) -> usize {
 
             lhs.contains(&rhs)
         })
-        .filter(|&x| x == true)
         .count()
 }
 
 fn part2(input: &str) -> usize {
     return input.split_terminator('\n')
-        .map(|line| {
+        .filter(|line| {
             let (start, end) = line.split_once(',').unwrap();
 
             let lhs = Section::from_str(start).unwrap();
@@ -59,7 +58,6 @@ fn part2(input: &str) -> usize {
 
             lhs.overlap(&rhs)
         })
-        .filter(|&x| x == true)
         .count();
 }
 
