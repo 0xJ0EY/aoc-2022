@@ -27,7 +27,7 @@ fn part2(input: &str) -> usize {
 
     for i in (0..lines.len()).step_by(3) {
         let (s1, s2, s3) = (
-            *lines.get(i + 0).unwrap_or(&""),
+            *lines.get(i).unwrap_or(&""),
             *lines.get(i + 1).unwrap_or(&""),
             *lines.get(i + 2).unwrap_or(&"")
         );

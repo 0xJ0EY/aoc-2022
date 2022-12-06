@@ -1,12 +1,12 @@
 
 fn part1(input: &str) -> usize {
     let mut calories: Vec<usize> = Vec::with_capacity(512);
-    let parts = input.split("\n");
+    let parts = input.split('\n');
 
     let mut current_calories: usize = 0;
 
     for part in parts {
-        if part.len() == 0 {
+        if part.is_empty() {
             calories.push(current_calories);
             current_calories = 0;
             continue;
@@ -20,12 +20,12 @@ fn part1(input: &str) -> usize {
 
 fn part2(input: &str) -> usize {
     let mut calories: Vec<usize> = Vec::with_capacity(512);
-    let parts = input.split("\n");
+    let parts = input.split('\n');
 
     let mut current_calories: usize = 0;
 
     for part in parts {
-        if part.len() == 0 {
+        if part.is_empty() {
             calories.push(current_calories);
             current_calories = 0;
             continue;
@@ -41,7 +41,7 @@ fn part2(input: &str) -> usize {
 
 fn part2_shorter(input: &str) -> usize {
     let mut values: Vec<usize> = input.split("\n\n").map(|x| 
-        x.split("\n")
+        x.split('\n')
             .map(|y| y.parse::<usize>().unwrap_or_default())
             .sum()
     ).collect();

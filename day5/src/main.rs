@@ -24,9 +24,7 @@ impl FromStr for CrateContainer {
                 match crates.get_mut(index) {
                     Some(row) => row.push(*value),
                     None => {
-                        let mut row = Vec::new();
-                        row.push(*value);
-
+                        let row = vec![*value];
                         crates.insert(index, row);
                     },
                 }
