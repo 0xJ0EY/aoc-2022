@@ -1,86 +1,30 @@
-use std::collections::{HashMap, VecDeque};
+fn is_unique_set(bytes: &[u8]) -> bool {
+    let mut bitset = 0u64;
 
-static PART1_MARKER_SIZE: usize = 4;
-static PART2_MARKER_SIZE: usize = 14;
+    for &byte in bytes {
+        bitset |= 1 << (byte & 0b00111111);
+    }
 
-struct StreamTuner {
-    entries: HashMap::<char, usize>,
-    latest: VecDeque::<char>,
-    index: usize,
-    marker_size: usize
+    bitset.count_ones() as usize == bytes.len()
 }
 
-impl StreamTuner {
-    fn new(marker_size: usize) -> StreamTuner {
-        StreamTuner {
-            entries: HashMap::new(),
-            latest: VecDeque::new(),
-            index: 0,
-            marker_size
-        }
-    }
+fn solve(input: &[u8], window_size: usize) -> Option<usize> {
+    let start = input.windows(window_size).position(|x| is_unique_set(x))?;
 
-    fn add(&mut self, input: char) {
-        self.latest.push_back(input);
-        self.index += 1;
-
-        *self.entries.entry(input).or_insert(0) += 1;
-
-        if self.latest.len() > self.marker_size {
-            let popped = self.latest.pop_front().unwrap();
-            
-            *self.entries.get_mut(&popped).unwrap() -= 1
-        }
-    }
-
-    fn is_unique(&self) -> bool {
-        if self.latest.len() < self.marker_size { return false; }
-
-        for c in self.latest.iter() {
-            let result = match self.entries.get(c) {
-                Some(v) => *v <= 1,
-                None => false,
-            };
-
-            if !result { return false }
-        }
-
-        true
-    }
-
-    fn index(&self) -> usize {
-        self.index
-    }
-
+    Some(start + window_size)
 }
 
-fn part1(input: &str) -> usize {
-    let mut tuner = StreamTuner::new(PART1_MARKER_SIZE);
-
-    for c in input.chars().into_iter() {
-        tuner.add(c);
-
-        if tuner.is_unique() { return tuner.index(); }
-    }
-    
-    0
+fn part1(input: &[u8]) -> Option<usize> {
+    solve(input, 4)
 }
 
-fn part2(input: &str) -> usize {
-    let mut tuner = StreamTuner::new(PART2_MARKER_SIZE);
-
-    for c in input.chars().into_iter() {
-        tuner.add(c);
-
-        if tuner.is_unique() { return tuner.index(); }
-    }
-    
-    0
+fn part2(input: &[u8]) -> Option<usize> {
+    solve(input, 14)
 }
 
 fn main() {
-    let input = include_str!("input.txt");
+    let input = include_bytes!("input.txt");
 
-    println!("part1: {}", part1(input));
-    println!("part1: {}", part2(input));
+    println!("part1: {}", part1(input).unwrap());
+    println!("part2: {}", part2(input).unwrap());
 }
