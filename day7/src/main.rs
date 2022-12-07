@@ -145,9 +145,9 @@ fn find_update_space(directory: &Directory, required: &usize) -> Option<usize> {
     if !lowest.is_empty() {
         lowest.sort();
         return *lowest.first().unwrap();
-    } else {
-        return Some(current_directory)    
     }
+
+    Some(current_directory)
 }
 
 fn part1(fs: &FileSystem) -> usize {
