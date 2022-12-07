@@ -150,16 +150,13 @@ fn find_update_space(directory: &Directory, required: &usize) -> Option<usize> {
     }
 }
 
-fn part1(input: &str) -> usize {
-    let fs = FileSystem::from_str(input).unwrap();
+fn part1(fs: &FileSystem) -> usize {
     let result = find_clearable_space(&fs.root.as_ref().borrow());
     result
 }
 
-
-fn part2(input: &str) -> usize {
-    let fs      = FileSystem::from_str(input).unwrap();
-    let used_space  = &fs.root.as_ref().borrow().total_size();
+fn part2(fs: &FileSystem) -> usize {
+    let used_space      = fs.root.as_ref().borrow().total_size();
     let unused_space    = AVAILABLE_DISK_SPACE - used_space;
     let space_to_find   = REQUIRED_UNUSED_SPACE - unused_space;
 
@@ -169,7 +166,8 @@ fn part2(input: &str) -> usize {
 
 fn main() {
     let input = include_str!("input.txt");
+    let fs = FileSystem::from_str(input).unwrap();
 
-    println!("part1: {}", part1(input));
-    println!("part2: {}", part2(input));
+    println!("part1: {}", part1(&fs));
+    println!("part2: {}", part2(&fs));
 }
