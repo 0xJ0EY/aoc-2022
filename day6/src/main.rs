@@ -9,7 +9,7 @@ fn is_unique_set(bytes: &[u8]) -> bool {
 }
 
 fn solve(input: &[u8], window_size: usize) -> Option<usize> {
-    let start = input.windows(window_size).position(|x| is_unique_set(x))?;
+    let start = input.windows(window_size).position(is_unique_set)?;
 
     Some(start + window_size)
 }

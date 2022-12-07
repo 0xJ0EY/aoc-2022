@@ -14,19 +14,19 @@ impl Input {
 
     fn from_lhs(input: &str) -> Option<Self> {
         match input {
-            "A" => return Some(Input::Rock),
-            "B" => return Some(Input::Paper),
-            "C" => return Some(Input::Scissors),
-            _ => return None
+            "A" => Some(Input::Rock),
+            "B" => Some(Input::Paper),
+            "C" => Some(Input::Scissors),
+            _ => None
         }
     }
 
     fn from_rhs(input: &str) -> Option<Self> {
         match input {
-            "X" => return Some(Input::Rock),
-            "Y" => return Some(Input::Paper),
-            "Z" => return Some(Input::Scissors),
-            _ => return None
+            "X" => Some(Input::Rock),
+            "Y" => Some(Input::Paper),
+            "Z" => Some(Input::Scissors),
+            _ => None
         }
     }
 
@@ -38,7 +38,7 @@ impl Input {
             ("X", Input::Paper)     => Some(Input::Rock),
             ("X", Input::Rock)      => Some(Input::Scissors),
             ("X", Input::Scissors)  => Some(Input::Paper),
-            ("Y", _)                => Some(lhs.clone()),
+            ("Y", _)                => Some(*lhs),
             ("Z", Input::Rock)      => Some(Input::Paper),
             ("Z", Input::Paper)     => Some(Input::Scissors),
             ("Z", Input::Scissors)  => Some(Input::Rock),
@@ -63,14 +63,14 @@ impl Input {
 }
 
 fn part1(input: &str) -> usize {
-    input.split("\n").map(|line| {
-        let parts: Vec<&str> = line.split(" ").collect();
+    input.split('\n').map(|line| {
+        let parts: Vec<&str> = line.split(' ').collect();
 
-        if parts.get(0).is_none() || parts.get(1).is_none() {
+        if parts.first().is_none() || parts.get(1).is_none() {
             return 0
         }
 
-        let lhs = Input::from_lhs(parts.get(0).unwrap()).unwrap();
+        let lhs = Input::from_lhs(parts.first().unwrap()).unwrap();
         let rhs = Input::from_rhs(parts.get(1).unwrap()).unwrap();
 
         rhs.calculate_move_points(&lhs)
@@ -78,14 +78,14 @@ fn part1(input: &str) -> usize {
 }
 
 fn part2(input: &str) -> usize {
-    input.split("\n").map(|line| {
-        let parts: Vec<&str> = line.split(" ").collect();
+    input.split('\n').map(|line| {
+        let parts: Vec<&str> = line.split(' ').collect();
 
-        if parts.get(0).is_none() || parts.get(1).is_none() {
+        if parts.first().is_none() || parts.get(1).is_none() {
             return 0
         }
 
-        let lhs = Input::from_lhs(parts.get(0).unwrap()).unwrap();
+        let lhs = Input::from_lhs(parts.first().unwrap()).unwrap();
         let rhs = Input::from_rhs_to_desired_end(parts.get(1).unwrap(), &lhs).unwrap();
         
         rhs.calculate_move_points(&lhs)
