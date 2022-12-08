@@ -92,7 +92,7 @@ fn part2(grid: &Grid) -> usize {
 }
 
 fn main() {
-    let input = include_str!("bigboy.txt");
+    let input = include_str!("input.txt");
     let grid = Grid::from_str(input).unwrap();
 
     println!("part1: {}", part1(&grid));
