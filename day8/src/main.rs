@@ -39,9 +39,7 @@ impl FromStr for Grid {
 }
 const DIRECTIONS: [(i32, i32); 4] = [(0, -1), (0, 1), (-1, 0), (1, 0)];
 
-fn part1(input: &str) -> usize {
-    let grid = Grid::from_str(input).unwrap();
-
+fn part1(grid: &Grid) -> usize {
     let result = grid.trees.iter().enumerate().filter(|(index, tree_height)| {
         let (x, y) = grid.to_coordinate(*index);
         if x == 0 || y == 0 { return true; }
@@ -64,9 +62,7 @@ fn part1(input: &str) -> usize {
     result
 }
 
-fn part2(input: &str) -> usize {
-    let grid = Grid::from_str(input).unwrap();
-
+fn part2(grid: &Grid) -> usize {
     let result = grid.trees.iter().enumerate().map(|(index, tree_height)| {
         let (x, y) = grid.to_coordinate(index);
         if x == 0 || y == 0 { return 0 }
@@ -96,7 +92,9 @@ fn part2(input: &str) -> usize {
 }
 
 fn main() {
-    let input = include_str!("input.txt");
-    println!("part1: {}", part1(input));
-    println!("part2: {}", part2(input));
+    let input = include_str!("bigboy.txt");
+    let grid = Grid::from_str(input).unwrap();
+
+    println!("part1: {}", part1(&grid));
+    println!("part2: {}", part2(&grid));
 }
