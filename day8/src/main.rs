@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr, cmp::max};
 
 struct Grid {
     width: usize,
@@ -39,62 +39,53 @@ impl FromStr for Grid {
 }
 const DIRECTIONS: [(i32, i32); 4] = [(0, -1), (0, 1), (-1, 0), (1, 0)];
 
-fn part1(grid: &Grid) -> usize {
-    let result = grid.trees.iter().enumerate().filter(|(index, tree_height)| {
-        let (x, y) = grid.to_coordinate(*index);
-        if x == 0 || y == 0 { return true; }
+fn solve(grid: &Grid) -> (usize, usize) {
+    grid.trees.iter().enumerate().map(|(index, tree_height)| {
+        let mut scenic_score = 1;
+        let mut any_visible = false;
 
-        DIRECTIONS.into_iter().any(|(dx, dy)| {
-            let (mut tx, mut ty) = (x as i32 + dx, y as i32 + dy);
-
-            while let Some(entry) = grid.entry(tx, ty) {    
-                if entry >= *tree_height {
-                    return false
-                }
-    
-                (tx, ty) = ((tx + dx), (ty + dy))
-            }
-
-            true
-        })
-    }).count();
-
-    result
-}
-
-fn part2(grid: &Grid) -> usize {
-    let result = grid.trees.iter().enumerate().map(|(index, tree_height)| {
         let (x, y) = grid.to_coordinate(index);
-        if x == 0 || y == 0 { return 0 }
 
-        let scenic_score = DIRECTIONS.into_iter().map(|(dx, dy)| {
+        DIRECTIONS.into_iter().for_each(|(dx, dy)| {
             let (mut tx, mut ty) = (x as i32 + dx, y as i32 + dy);
 
+            let mut visible = true;
             let mut view_distance = 0;
 
-            while let Some(entry) = grid.entry(tx, ty) {    
+            while let Some(entry) = grid.entry(tx, ty) {
                 view_distance += 1;
 
                 if entry >= tree_height {
-                    return view_distance
+                    visible = false;
+                    break;
                 }
-    
+
                 (tx, ty) = ((tx + dx), (ty + dy))
             }
 
-            view_distance
-        }).fold(1, |acc, val| acc * val);
+            if visible == true {
+                any_visible = true;
+            }
 
-        scenic_score
-    }).max();
+            scenic_score *= view_distance;
+        });
 
-    result.unwrap()
+        (any_visible, scenic_score)
+    }).fold((0, 0), |(mut visible, mut max_scenic_score), (is_visible, scenic_score)| {
+        if is_visible { visible += 1 }
+
+        max_scenic_score = max(max_scenic_score, scenic_score);
+
+        (visible, max_scenic_score)
+    })
 }
 
 fn main() {
     let input = include_str!("input.txt");
     let grid = Grid::from_str(input).unwrap();
 
-    println!("part1: {}", part1(&grid));
-    println!("part2: {}", part2(&grid));
+    let (part1, part2) = solve(&grid);
+
+    println!("part1: {}", part1);
+    println!("part2: {}", part2);
 }
