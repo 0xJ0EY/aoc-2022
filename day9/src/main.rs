@@ -79,20 +79,8 @@ impl Bridge {
                 let (dx, dy) = ((*hx - *tx), (*hy - *ty));
                 
                 if dx.abs() > 1 || dy.abs() > 1 {
-                    let rotation = (dy as f32).atan2(dx as f32).to_degrees();
-                    let step = ((rotation / 45.0).round() * 45.0) as i32;
-
-                    let (x, y) = match step {
-                        0 => (1, 0),
-                        45 => (1, 1),
-                        90 => (0, 1),
-                        135 => (-1, 1),
-                        -45 => (1, -1),
-                        -90 => (0, -1),
-                        -135 => (-1, -1),
-                        180 | -180 => (-1, 0),
-                        _   => unreachable!()
-                    };
+                    let x = dx.clamp(-1, 1);
+                    let y = dy.clamp(-1, 1);
 
                     let new_pos = (*tx + x, *ty + y);
 
