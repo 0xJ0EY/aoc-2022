@@ -1,227 +1,165 @@
-#[derive(Debug)]
 struct MonkeyTest {
-    predicate: MonkeyOperation,    
+    value: usize,
     if_true: usize,
     if_false: usize
 }
 
-impl MonkeyTest {
-    fn from_input_text(lines: &Vec<&str>) -> MonkeyTest {
-        let test_parts = &lines.get(3).unwrap()["  Test: ".len()..].split(" ").collect::<Vec<_>>();
-        let (operator, value) = (*test_parts.first().unwrap(), *test_parts.last().unwrap());
-        let value = Literal::parse(value);
-
-        let predicate = match operator {
-            "divisible" => MonkeyOperation::Divisible(value),
-            _ => unreachable!("Other operators not supported")
-        };
-
-        let if_true = lines.get(4).unwrap()["    If true: throw to monkey ".len()..].parse().unwrap();
-        let if_false = lines.get(5).unwrap()["    If false: throw to monkey ".len()..].parse().unwrap();
-
-        MonkeyTest { predicate, if_true, if_false }
-    }
+enum Value {
+    Previous,
+    Number(usize)
 }
 
-#[derive(Debug)]
-enum Literal {
-    Number(usize),
-    Variable(String),
-}
+impl From<&str> for Value {
+    fn from(val: &str) -> Self {
+        let value = val.parse::<usize>();
 
-impl Literal {
-    fn parse(s: &str) -> Literal {
-        match s.trim().parse() {
-            Ok(value) => Literal::Number(value),
-            Err(_) => Literal::Variable(String::from(s))
-        }
-    }
-
-    fn get_value(&self, other: &usize) -> usize {
-        match self {
-            Literal::Number(value) => *value,
-            Literal::Variable(_) => *other,
+        match value {
+            Ok(x) => Value::Number(x),
+            Err(_) => Value::Previous,
         }
     }
 }
 
-#[derive(Debug)]
-enum MonkeyOperation {
-    Times(Literal),
-    Add(Literal),
-    Divisible(Literal)
-}
-
-impl MonkeyOperation {
-    fn from_operation_line(s: &str) -> MonkeyOperation {
-        let (operator, value) = s["  Operation: new = old ".len()..]
-            .split_once(" ")
-            .unwrap();
-
-        let value = Literal::parse(value);
-
-        match operator {
-            "+" => MonkeyOperation::Add(value),
-            "*" => MonkeyOperation::Times(value),
-            _ => todo!()
-        }
-    }
-}
-
-#[derive(Debug)]
 struct Monkey {
-    inspected_items: usize,
+    inspected: usize,
     items: Vec<usize>,
-    operation: MonkeyOperation,
+    rhs: Value,
+    operation: fn(&Monkey, usize) -> usize,
     test: MonkeyTest
 }
 
 impl Monkey {
-    fn parse(s: &str) -> Monkey {
-        let lines: Vec<&str> = s.split_terminator('\n').collect();
+    fn add(&self, item: usize) -> usize {
+        let rhs = match self.rhs {
+            Value::Previous => item,
+            Value::Number(x) => x,
+        };
 
-        let items_range: Vec<usize> = lines.get(1)
-            .unwrap()["  Starting items:".len()..]
-            .split(',')
-            .map(|x| x.trim().parse::<usize>().unwrap())
-            .collect();
-
-        let operation = MonkeyOperation::from_operation_line(lines.get(2).unwrap());
-
-        let test = MonkeyTest::from_input_text(&lines);
-
-        Monkey { inspected_items: 0, items: items_range, operation, test }
+        item + rhs
     }
 
-    fn round_actions(&mut self) -> Vec<(usize, usize)> {
+    fn multiply(&self, item: usize) -> usize {
+        let rhs = match self.rhs {
+            Value::Previous => item,
+            Value::Number(x) => x,
+        };
+
+        item * rhs
+    }
+
+    fn inspect_part1(&mut self) -> Vec<(usize, usize)> {
         let mut actions = Vec::<(usize, usize)>::new();
 
         while let Some(worry_level) = self.items.pop() {
-            
-            let worry_level = match &self.operation {
-                MonkeyOperation::Times(lit) => (worry_level * lit.get_value(&worry_level)) / 3,
-                MonkeyOperation::Add(lit) => (worry_level + lit.get_value(&worry_level)) / 3,
-                _ => todo!()
-            };
+            let worry_level = (self.operation)(&self, worry_level) / 3;
 
-            let is_divisible = match &self.test.predicate {                
-                MonkeyOperation::Divisible(by) => {
-                    if let Literal::Number(x) = by {
-                        worry_level % x == 0
-                    } else {
-                        todo!("Variable support not implemented")
-                    }
-                },
-                _ => todo!()
-            };
+            if worry_level % self.test.value == 0 {
+                actions.push((self.test.if_true, worry_level));
+            } else {
+                actions.push((self.test.if_false, worry_level));
+            }
 
-            actions.push((worry_level, if is_divisible { self.test.if_true } else { self.test.if_false }));
-
-            self.inspected_items += 1;
+            self.inspected += 1;
         }
-        
+
         actions
     }
 
-    fn round_actions2(&mut self, divisor: usize) -> Vec<(usize, usize)> {
+    fn inspect_part2(&mut self, divisor: usize) -> Vec<(usize, usize)> {
         let mut actions = Vec::<(usize, usize)>::new();
 
         while let Some(worry_level) = self.items.pop() {
-            
-            let worry_level = match &self.operation {
-                MonkeyOperation::Times(lit) => worry_level * lit.get_value(&worry_level),
-                MonkeyOperation::Add(lit) => worry_level + lit.get_value(&worry_level),
-                _ => todo!()
-            };
-            
-            let worry_level = worry_level % divisor;
+            let worry_level = (self.operation)(&self, worry_level) % divisor;
 
-            let is_divisible = match &self.test.predicate {                
-                MonkeyOperation::Divisible(by) => {
-                    if let Literal::Number(x) = by {
-                        worry_level % x == 0
-                    } else {
-                        todo!("Variable support not implemented")
-                    }
-                },
-                _ => todo!()
-            };
+            if worry_level % self.test.value == 0 {
+                actions.push((self.test.if_true, worry_level));
+            } else {
+                actions.push((self.test.if_false, worry_level));
+            }
 
-            actions.push((worry_level, if is_divisible { self.test.if_true } else { self.test.if_false }));
-
-            self.inspected_items += 1;
+            self.inspected += 1;
         }
-        
+
         actions
     }
 }
 
-#[derive(Debug)]
 struct MonkeyCollective {
+    divisor: usize,
     monkeys: Vec<Monkey>
 }
 
 impl MonkeyCollective {
     fn parse(s: &str) -> MonkeyCollective {
-        let monkeys = s.split_terminator("\n\n").map(Monkey::parse).collect();
+        let monkeys = s.split_terminator("\n\n").map(|entry| {
+            let lines = entry.split_terminator('\n').collect::<Vec<&str>>();
 
-        MonkeyCollective { monkeys }
-    }
+            let items = lines.get(1).unwrap()["  Starting items: ".len()..]
+                .split(", ")
+                .map(|x| x.parse::<usize>().unwrap())
+                .collect();
 
-    fn calculate_divisor(&self) -> usize {
-        let mut modulo = 1;
+            let test = lines.get(3).unwrap()["  Test: divisible by ".len()..].parse().unwrap();
+            let if_true = lines.get(4).unwrap()["    If true: throw to monkey ".len()..].parse().unwrap();
+            let if_false = lines.get(5).unwrap()["    If false: throw to monkey ".len()..].parse().unwrap();
 
-        self.monkeys.iter().for_each(|monkey| {
-            if let MonkeyOperation::Divisible(literal) = &monkey.test.predicate {
-                if let Literal::Number(value) = &literal {
-                    modulo *= value;
-                }
+            let operation_line = lines.get(2).unwrap();
+            let operator_index = operation_line.chars().position(|x| x == '+' || x == '*').unwrap();
+
+            let is_operation_add = &operation_line[operator_index..operator_index+1] == "+";
+            let rhs = Value::from(&operation_line[operator_index + 2..]);
+
+            Monkey {
+                inspected: 0,
+                items,
+                rhs,
+                operation: if is_operation_add { Monkey::add } else { Monkey::multiply },
+                test: MonkeyTest { value: test, if_true, if_false }
             }
-        });
+        }).collect();
 
-        modulo
+        let divisor = MonkeyCollective::calculate_divisor(&monkeys);
+        
+        MonkeyCollective { divisor, monkeys }
     }
 
-    fn process_round(&mut self, divisor: usize) {
+    fn round1(&mut self) {
         for index in 0..self.monkeys.len() {
-            let actions = self.monkeys.get_mut(index).unwrap().round_actions();
-
-            actions.iter().for_each(|(item, monkey_index)| {
-                let monkey = self.monkeys.get_mut(*monkey_index).unwrap();
-                monkey.items.push(*item);
-            });
+            for (target, worry_level) in self.monkeys[index].inspect_part1() {
+                self.monkeys[target].items.push(worry_level);
+            }
         }
     }
 
-    fn process_round2(&mut self, divisor: usize) {
+    fn round2(&mut self) {
         for index in 0..self.monkeys.len() {
-            let actions = self.monkeys.get_mut(index).unwrap().round_actions2(divisor);
-
-            actions.iter().for_each(|(item, monkey_index)| {
-                let monkey = self.monkeys.get_mut(*monkey_index).unwrap();
-                monkey.items.push(*item);
-            });
+            for (target, worry_level) in self.monkeys[index].inspect_part2(self.divisor) {
+                self.monkeys[target].items.push(worry_level);
+            }
         }
+    }
+
+    fn calculate_divisor(monkeys: &Vec<Monkey>) -> usize {
+        monkeys.iter().fold(1, |acc, monkey| acc * monkey.test.value)
     }
 
     fn calculate_monkey_business(&self) -> usize {
         let mut m: Vec<&Monkey> = self.monkeys.iter().collect();
 
-        m.sort_by(|a, b| b.inspected_items.cmp(&a.inspected_items));
+        m.sort_by(|a, b| b.inspected.cmp(&a.inspected));
 
-        let first   = m.first().unwrap().inspected_items;
-        let second  = m.get(1).unwrap().inspected_items;
+        let first = m[0].inspected;
+        let second = m[1].inspected;
 
         first * second
-    } 
-
+    }
 }
 
 fn part1(input: &str) -> usize {
     let mut monkey_collective = MonkeyCollective::parse(input);
 
     for _ in 0..20 {
-        monkey_collective.process_round(3);
+        monkey_collective.round1();
     }
 
     monkey_collective.calculate_monkey_business()
@@ -230,10 +168,8 @@ fn part1(input: &str) -> usize {
 fn part2(input: &str) -> usize {
     let mut monkey_collective = MonkeyCollective::parse(input);
 
-    let divisor = monkey_collective.calculate_divisor();
-
     for _ in 0..10000 {
-        monkey_collective.process_round2(divisor);
+        monkey_collective.round2();
     }
 
     monkey_collective.calculate_monkey_business()
