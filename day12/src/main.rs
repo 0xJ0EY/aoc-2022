@@ -60,13 +60,6 @@ impl Grid {
         Some(Node { step: 0, x, y, value: self.values[index] })
     }
 
-    fn get_by_index(&self, index: usize) -> Option<Node> {
-        let x = index % self.width;
-        let y = index / self.width;
-
-        Some(Node { step: 0, x, y, value: self.values[index] })
-    }
-
     fn start_node(&self) -> Option<Node> {
         let (x, y) = self.start;
 
@@ -91,27 +84,6 @@ impl Grid {
 
         nodes
     }
-
-
-    fn draw(&self, visited: &HashSet<(usize, usize)>) -> () {
-
-        for y in 0..self.height as isize {
-            for x in 0..self.width as isize {
-                let node = self.get(x, y).unwrap();
-
-                if visited.contains(&(node.x, node.y)) {
-                    print!("@")    
-                } else {
-                    print!("{}", (node.value + b'a') as char)
-                }   
-            }
-
-            println!("")
-        }
-
-        std::process::Command::new("clear").status().unwrap();
-    } 
-    
 }
 
 #[derive(Debug)]
