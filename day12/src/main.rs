@@ -73,6 +73,12 @@ impl Grid {
         self.get(x as isize, y as isize)
     }
 
+    fn end_node(&self) -> Option<Node> {
+        let (x, y) = self.end;
+
+        self.get(x as isize, y as isize)
+    }
+
     fn get_adjacent_nodes(&self, node: &Node) -> Vec<Node> {
         let mut nodes = Vec::new();
 
@@ -150,6 +156,36 @@ impl BFS {
 
         None
     }
+
+    fn find_hiking_trail(&mut self, grid: &Grid) -> Option<Node> {
+        let root = grid.end_node().unwrap();
+        self.queue.push_back(root);
+
+        while let Some(v) = self.queue.pop_front() {
+            self.visited.insert((v.x, v.y));
+
+            if v.value == 0 { return Some(v); }
+
+            let adjacent_nodes: Vec<Node> = grid.get_adjacent_nodes(&v).into_iter().filter(|x| {
+                let current = &v;
+                let neighbor = x;
+
+                current.value <= neighbor.value + 1
+            }).collect();
+
+            for mut edge in adjacent_nodes {
+                if self.visited.contains(&(edge.x, edge.y)) { continue }
+                self.visited.insert((edge.x, edge.y));
+
+                edge.step = v.step + 1;
+
+                self.queue.push_back(edge);
+            }
+        }
+
+        None
+    }
+
 }
 
 fn part1(grid: &Grid) -> usize {
@@ -160,7 +196,7 @@ fn part1(grid: &Grid) -> usize {
 
 fn part2(grid: &Grid) -> usize {
     let mut bfs = BFS::new();
-    let end_node = bfs.find_end(grid).unwrap();
+    let end_node = bfs.find_hiking_trail(grid).unwrap();
     end_node.step
 }
 
