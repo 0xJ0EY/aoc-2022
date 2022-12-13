@@ -34,7 +34,7 @@ impl Entry {
     fn parse_entry(s: &str) -> Entry {
         let mut tokens = s.chars().collect::<VecDeque<char>>();
 
-        Entry::parse_list(&mut tokens)        
+        Entry::parse_list(&mut tokens)
     }
 
     fn parse_number(tokens: &mut VecDeque<char>) -> Entry {
@@ -98,8 +98,7 @@ fn part1(input: &str) -> usize {
     let entries = Entry::parse(input);
 
     entries.iter().enumerate().map(|(index, (left, right))| {
-        let in_order = left.partial_cmp(right) <= Some(Ordering::Equal);
-
+        let in_order = left < right;
         let multiplier = if in_order { 1 } else { 0 };
 
         (index + 1) * multiplier
@@ -117,7 +116,7 @@ fn part2(input: &str) -> usize {
     let d1 = Entry::List(vec![Entry::List(vec![Entry::Value(2)])]);
     let d2 = Entry::List(vec![Entry::List(vec![Entry::Value(6)])]);
 
-    entries.push(d2.clone());
+    entries.push(d1.clone());
     entries.push(d2.clone());
     
     entries.sort();
