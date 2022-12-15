@@ -40,6 +40,9 @@ impl Sensor {
     fn covers_grid(&self, x1: i64, y1: i64, x2: i64, y2: i64) -> bool {
         let (sx, sy) = self.loc;
 
+        // Check for every corner of the grid the manhattan distance to the sensor
+        // If the corner that is furthest away from the sensor is still lower then the radius of the sensor
+        // We know that the sensor completely covers the grid
         let max = [(x1, y1), (x1, y2), (x2, y1), (x2, y2)].iter()
             .map(|(x, y)| (x - sx).abs() + (y - sy).abs())
             .max().unwrap();
@@ -106,9 +109,11 @@ fn part2(s: &str) -> i64 {
     let sensors = Sensor::parse(s);
     let (search_width, search_height) = (4000000, 4000000);
 
-    let mut stack: Vec<(i64, i64, i64, i64)> = vec![(0, 0, search_width, search_height)];
+    let mut partitions: Vec<(i64, i64, i64, i64)> = vec![(0, 0, search_width, search_height)];
 
-    while let Some((x1, y1, x2, y2)) = stack.pop() {
+    while let Some((x1, y1, x2, y2)) = partitions.pop() {
+
+        // Check if the current partition is covered by any sensor, if it is, we skip it
         if sensors.iter().any(|sensor| sensor.covers_grid(x1, y1, x2, y2)) {
             continue;
         }
@@ -118,8 +123,9 @@ fn part2(s: &str) -> i64 {
             return 4_000_000 * x1 + y2;
         }
 
-        for quadrant in quadrants(x1, y1, x2, y2) {
-            stack.push(quadrant);
+        // Since we didn't return on the previous statement, we still have some space to partition
+        for partition in quadrants(x1, y1, x2, y2) {
+            partitions.push(partition);
         }
     }
 
